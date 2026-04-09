@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Daniel Garza — TPM & Enterprise Integrations</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    /* ===== CONFIG: Edit these values ===== */
+    :root {
+      --github-username: "YOUR_GITHUB_USERNAME"; /* change in JS config below */
+      --accent:  #00d4ff;
+      --accent2: #00ff88;
+      --bg:      #090d14;
+      --bg2:     #0e1420;
+      --bg3:     #141b27;
+      --border:  #1e2d42;
+      --text:    #c9d8ef;
+      --muted:   #5a7291;
+      --heading: #e8f2ff;
+      --danger:  #ff4c6a;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* === GRID OVERLAY === */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0, 212, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 212, 255, 0.02) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* === NAV === */
+    nav {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 100;
+      background: rgba(9, 13, 20, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 clamp(1.5rem, 5vw, 4rem);
+    }
+
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 56px;
+    }
+
+    .nav-logo {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 16px;
+      color: var(--heading);
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+
+    .nav-logo span { color: var(--accent); }
+
+    .nav-links {
+      display: flex;
+      gap: 28px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover,
+    .nav-links a.active { color: var(--accent); }
+
+    /* === SECTIONS === */
+    section {
+      position: relative;
+      z-index: 1;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: clamp(5rem, 10vw, 7rem) clamp(1.5rem, 5vw, 4rem);
+    }
+
+    .section-label {
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+
+    h2.section-title {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(28px, 4vw, 42px);
+      font-weight: 800;
+      color: var(--heading);
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      margin-bottom: 3rem;
+    }
+
+    h2.section-title span { color: var(--accent); }
+
+    /* === HERO === */
+    #hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding-top: 7rem;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding-left: clamp(1.5rem, 5vw, 4rem);
+      padding-right: clamp(1.5rem, 5vw, 4rem);
+    }
+
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(0, 212, 255, 0.07);
+      border: 1px solid rgba(0, 212, 255, 0.2);
+      border-radius: 4px;
+      padding: 6px 14px;
+      font-size: 12px;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+      margin-bottom: 2rem;
+    }
+
+    .hero-tag::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background: var(--accent2);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.8); }
+    }
+
+    .hero-name {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(44px, 8vw, 88px);
+      font-weight: 800;
+      color: var(--heading);
+      letter-spacing: -0.04em;
+      line-height: 1;
+      margin-bottom: 1.5rem;
+    }
+
+    .hero-name .accent { color: var(--accent); }
+
+    .hero-tagline {
+      font-size: clamp(15px, 2.5vw, 20px);
+      color: var(--muted);
+      max-width: 580px;
+      line-height: 1.6;
+      margin-bottom: 2.5rem;
+    }
+
+    .typing-line {
+      color: var(--text);
+      font-size: 13px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 12px 18px;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 3rem;
+    }
+
+    .prompt { color: var(--accent2); }
+    .cursor {
+      display: inline-block;
+      width: 2px;
+      height: 14px;
+      background: var(--accent);
+      animation: blink 1s step-end infinite;
+      vertical-align: middle;
+    }
+
+    @keyframes blink { 50% { opacity: 0; } }
+
+    .hero-cta {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #090d14;
+      border: 1px solid var(--accent);
+    }
+
+    .btn-primary:hover {
+      background: transparent;
+      color: var(--accent);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* === DIVIDER === */
+    .divider {
+      width: 100%;
+      height: 1px;
+      background: var(--border);
+      max-width: 1100px;
+      margin: 0 auto;
+      opacity: 0.4;
+    }
+
+    /* === ABOUT === */
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: start;
+    }
+
+    .about-text p {
+      color: var(--text);
+      line-height: 1.8;
+      margin-bottom: 1.2rem;
+      font-size: 14px;
+    }
+
+    .about-text p:last-child { margin-bottom: 0; }
+
+    .about-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .stat-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--accent);
+    }
+
+    .stat-number {
+      font-family: 'Syne', sans-serif;
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--heading);
+      letter-spacing: -0.03em;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .stat-number span { color: var(--accent); }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* === SKILLS TAGS === */
+    .skills-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 2rem;
+    }
+
+    .skill-tag {
+      background: rgba(0, 212, 255, 0.05);
+      border: 1px solid rgba(0, 212, 255, 0.15);
+      border-radius: 4px;
+      padding: 5px 12px;
+      font-size: 12px;
+      color: var(--accent);
+      letter-spacing: 0.04em;
+    }
+
+    /* === PROJECTS === */
+    #projects { padding-top: 5rem; }
+
+    .github-input-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 3rem;
+      align-items: center;
+    }
+
+    .github-input-bar input {
+      flex: 1;
+      max-width: 360px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--heading);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .github-input-bar input:focus { border-color: var(--accent); }
+    .github-input-bar input::placeholder { color: var(--muted); }
+
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    .project-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 24px;
+      transition: border-color 0.2s, transform 0.2s;
+      display: flex;
+      flex-direction: column;
+      text-decoration: none;
+      color: inherit;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .project-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(0, 212, 255, 0.03), transparent);
+      pointer-events: none;
+    }
+
+    .project-card:hover {
+      border-color: rgba(0, 212, 255, 0.4);
+      transform: translateY(-3px);
+    }
+
+    .project-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .project-icon {
+      width: 36px;
+      height: 36px;
+      background: rgba(0, 212, 255, 0.08);
+      border: 1px solid rgba(0, 212, 255, 0.15);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .project-icon svg { width: 18px; height: 18px; stroke: var(--accent); fill: none; }
+
+    .project-arrow {
+      width: 20px;
+      height: 20px;
+      color: var(--muted);
+      transition: color 0.2s;
+    }
+
+    .project-card:hover .project-arrow { color: var(--accent); }
+
+    .project-name {
+      font-family: 'Syne', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--heading);
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
+    }
+
+    .project-desc {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.6;
+      flex: 1;
+      margin-bottom: 16px;
+    }
+
+    .project-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .project-lang {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .lang-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent2);
+    }
+
+    .project-stars {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .loading-state {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: var(--muted);
+    }
+
+    .loading-dots::after {
+      content: '...';
+      animation: dots 1.5s steps(4, end) infinite;
+    }
+
+    @keyframes dots {
+      0%, 20% { content: ''; }
+      40% { content: '.'; }
+      60% { content: '..'; }
+      80%, 100% { content: '...'; }
+    }
+
+    /* === EXPERIENCE === */
+    .timeline {
+      position: relative;
+      padding-left: 40px;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 7px;
+      top: 8px;
+      bottom: 8px;
+      width: 1px;
+      background: linear-gradient(to bottom, var(--accent), var(--border), transparent);
+    }
+
+    .timeline-item {
+      position: relative;
+      margin-bottom: 3rem;
+    }
+
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: -37px;
+      top: 6px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--bg);
+      border: 2px solid var(--accent);
+    }
+
+    .timeline-item:first-child::before { background: var(--accent); }
+
+    .timeline-period {
+      font-size: 11px;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .timeline-role {
+      font-family: 'Syne', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--heading);
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
+    }
+
+    .timeline-company {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+
+    .timeline-company a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .timeline-details {
+      list-style: none;
+    }
+
+    .timeline-details li {
+      font-size: 13px;
+      color: var(--text);
+      padding: 5px 0;
+      padding-left: 18px;
+      position: relative;
+      line-height: 1.6;
+    }
+
+    .timeline-details li::before {
+      content: '›';
+      position: absolute;
+      left: 0;
+      color: var(--accent2);
+    }
+
+    .timeline-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .timeline-tag {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 3px 10px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    /* === CONTACT === */
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: start;
+    }
+
+    .contact-text {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.8;
+      margin-bottom: 2rem;
+    }
+
+    .contact-links {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .contact-link {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px 20px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      text-decoration: none;
+      color: var(--text);
+      transition: all 0.2s;
+      font-size: 13px;
+    }
+
+    .contact-link:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .contact-link-icon {
+      width: 36px;
+      height: 36px;
+      background: rgba(0, 212, 255, 0.06);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .contact-link-icon svg {
+      width: 18px;
+      height: 18px;
+      stroke: var(--accent);
+      fill: none;
+    }
+
+    .contact-link-text strong {
+      display: block;
+      font-weight: 500;
+      color: var(--heading);
+      font-size: 13px;
+    }
+
+    .contact-link-text small {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .resume-cta {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 32px;
+    }
+
+    .resume-cta h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--heading);
+      margin-bottom: 12px;
+    }
+
+    .resume-cta p {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.7;
+      margin-bottom: 20px;
+    }
+
+    /* === FOOTER === */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem clamp(1.5rem, 5vw, 4rem);
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+      position: relative;
+      z-index: 1;
+    }
+
+    footer span { color: var(--accent); }
+
+    /* === ANIMATIONS === */
+    .fade-in {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .fade-in.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* === RESPONSIVE === */
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .about-grid,
+      .contact-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+      .about-stats { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="#hero" class="nav-logo">DG<span>.dev</span></a>
+    <ul class="nav-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#projects">Projects</a></li>
+      <li><a href="#experience">Experience</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-tag">Available for new opportunities</div>
+  <h1 class="hero-name">Daniel<br><span class="accent">Garza</span></h1>
+  <p class="hero-tagline">
+    Technical Program Manager · Enterprise Integrations · API &amp; Middleware Platforms
+  </p>
+  <div class="typing-line">
+    <span class="prompt">$</span>
+    <span id="typed-text"></span>
+    <span class="cursor"></span>
+  </div>
+  <div class="hero-cta">
+    <a href="#contact" class="btn btn-primary">Get in touch</a>
+    <a href="#projects" class="btn btn-ghost">View projects</a>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ABOUT -->
+<section id="about">
+  <p class="section-label">// about me</p>
+  <h2 class="section-title">Building systems that<br><span>scale &amp; connect</span></h2>
+  <div class="about-grid">
+    <div class="about-text fade-in">
+      <p>
+        I'm a Technical Program Manager with nearly two decades of experience in mortgage &amp;
+        financial services technology. I specialize in enterprise integrations, API/middleware
+        platforms, and delivering complex programs at scale.
+      </p>
+      <p>
+        Most recently I managed the <strong>Exchange platform</strong> at Dark Matter Technologies —
+        the backbone connecting hundreds of LOS clients to third-party service providers via
+        REST and SOAP APIs. I thrive at the intersection of engineering and strategy, translating
+        complex technical requirements into executed roadmaps.
+      </p>
+      <p>
+        Outside of my day job, I'm building <strong>Fuerza Home Services</strong>, a bilingual
+        on-demand marketplace for home service trades in Texas — full-stack with React Native,
+        Node.js, PostgreSQL, and Stripe.
+      </p>
+      <div class="skills-grid">
+        <span class="skill-tag">REST / SOAP APIs</span>
+        <span class="skill-tag">OAuth 2.0 / JWT</span>
+        <span class="skill-tag">MISMO 3.4</span>
+        <span class="skill-tag">AWS Lambda</span>
+        <span class="skill-tag">Azure DevOps</span>
+        <span class="skill-tag">React Native</span>
+        <span class="skill-tag">Node.js</span>
+        <span class="skill-tag">PostgreSQL</span>
+        <span class="skill-tag">Stripe</span>
+        <span class="skill-tag">Agile / SAFe</span>
+      </div>
+    </div>
+    <div class="about-stats fade-in">
+      <div class="stat-card">
+        <div class="stat-number">17<span>+</span></div>
+        <div class="stat-label">Years experience</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">200<span>+</span></div>
+        <div class="stat-label">Integrations delivered</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">8</div>
+        <div class="stat-label">Active sprint sprints</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">2</div>
+        <div class="stat-label">Apps in production</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- PROJECTS -->
+<section id="projects">
+  <p class="section-label">// github projects</p>
+  <h2 class="section-title">What I've<br><span>been building</span></h2>
+  <div class="github-input-bar">
+    <input type="text" id="gh-username" placeholder="Enter GitHub username (e.g. daniel-garza)" />
+    <button class="btn btn-primary" onclick="loadProjects()">Load repos</button>
+  </div>
+  <div id="projects-grid" class="projects-grid">
+    <div class="loading-state">
+      <p style="color: var(--muted); font-size: 13px;">Enter your GitHub username above to load your repositories.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- EXPERIENCE -->
+<section id="experience">
+  <p class="section-label">// experience</p>
+  <h2 class="section-title">Career<br><span>timeline</span></h2>
+  <div class="timeline">
+
+    <div class="timeline-item fade-in">
+      <div class="timeline-period">2022 — Present</div>
+      <div class="timeline-role">Technical Program Manager</div>
+      <div class="timeline-company">Dark Matter Technologies</div>
+      <ul class="timeline-details">
+        <li>Led the Exchange Service Network platform — 200+ third-party integrations for LOS clients via REST &amp; SOAP APIs</li>
+        <li>Managed full SDLC for partner onboardings, governing MISMO 3.4 compliance across all integrations</li>
+        <li>Reduced integration delivery time by 30% through standardized OAuth 2.0 / JWT authentication patterns</li>
+        <li>Coordinated cross-functional teams across engineering, product, and compliance for regulatory releases</li>
+      </ul>
+      <div class="timeline-tags">
+        <span class="timeline-tag">API Management</span>
+        <span class="timeline-tag">MISMO 3.4</span>
+        <span class="timeline-tag">OAuth 2.0</span>
+        <span class="timeline-tag">Azure DevOps</span>
+        <span class="timeline-tag">LOS / Empower</span>
+      </div>
+    </div>
+
+    <div class="timeline-item fade-in">
+      <div class="timeline-period">2024 — Present</div>
+      <div class="timeline-role">Independent Consultant</div>
+      <div class="timeline-company">Self-employed</div>
+      <ul class="timeline-details">
+        <li>Built an AI-powered ERA/EOB claims processing app for Family First ER using Cursor AI — reduced claim triage from 1–2 days to under 90 seconds</li>
+        <li>Designed and deployed an Airtable-based maintenance ticketing system for AGT Unlimited, streamlining 60+ monthly work orders</li>
+      </ul>
+      <div class="timeline-tags">
+        <span class="timeline-tag">AI / LLM</span>
+        <span class="timeline-tag">Airtable</span>
+        <span class="timeline-tag">Claims Processing</span>
+        <span class="timeline-tag">Automation</span>
+      </div>
+    </div>
+
+    <div class="timeline-item fade-in">
+      <div class="timeline-period">2020 — 2022</div>
+      <div class="timeline-role">Senior TPM / Integration Lead</div>
+      <div class="timeline-company">Previous Employer</div>
+      <ul class="timeline-details">
+        <li>Delivered middleware integrations for mortgage origination platforms across 5 major financial institutions</li>
+        <li>Managed RAID logs, RAG status reporting, and stakeholder escalation across concurrent programs</li>
+        <li>Championed Agile transformation, moving 3 teams from waterfall to 2-week sprint cadences</li>
+      </ul>
+      <div class="timeline-tags">
+        <span class="timeline-tag">Middleware</span>
+        <span class="timeline-tag">RAID Logs</span>
+        <span class="timeline-tag">Agile</span>
+        <span class="timeline-tag">Stakeholder Mgmt</span>
+      </div>
+    </div>
+
+    <div class="timeline-item fade-in">
+      <div class="timeline-period">2005 — 2020</div>
+      <div class="timeline-role">Mortgage Technology Lead</div>
+      <div class="timeline-company">Earlier Career</div>
+      <ul class="timeline-details">
+        <li>15-year progression from developer to program manager in mortgage &amp; financial services technology</li>
+        <li>Deep domain expertise in loan origination systems, compliance, and enterprise platform architecture</li>
+      </ul>
+      <div class="timeline-tags">
+        <span class="timeline-tag">FinTech</span>
+        <span class="timeline-tag">LOS</span>
+        <span class="timeline-tag">C# / .NET</span>
+        <span class="timeline-tag">Enterprise Architecture</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- CONTACT -->
+<section id="contact">
+  <p class="section-label">// contact</p>
+  <h2 class="section-title">Let's build<br><span>something great</span></h2>
+  <div class="contact-grid">
+    <div>
+      <p class="contact-text">
+        I'm open to TPM, Enterprise Integration, and Senior PM roles — especially in FinTech,
+        mortgage tech, or platform-scale companies. I'm also available for consulting engagements
+        and technical advisory work.
+      </p>
+      <div class="contact-links">
+        <a href="mailto:your@email.com" class="contact-link">
+          <div class="contact-link-icon">
+            <svg viewBox="0 0 24 24" stroke-width="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          </div>
+          <div class="contact-link-text">
+            <strong>Email</strong>
+            <small>your@email.com</small>
+          </div>
+        </a>
+        <a href="https://linkedin.com/in/YOUR_LINKEDIN" target="_blank" class="contact-link">
+          <div class="contact-link-icon">
+            <svg viewBox="0 0 24 24" stroke-width="1.5"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+          </div>
+          <div class="contact-link-text">
+            <strong>LinkedIn</strong>
+            <small>linkedin.com/in/your-profile</small>
+          </div>
+        </a>
+        <a href="https://github.com/YOUR_USERNAME" target="_blank" class="contact-link">
+          <div class="contact-link-icon">
+            <svg viewBox="0 0 24 24" stroke-width="1.5"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+          </div>
+          <div class="contact-link-text">
+            <strong>GitHub</strong>
+            <small>github.com/your-username</small>
+          </div>
+        </a>
+      </div>
+    </div>
+    <div class="resume-cta fade-in">
+      <h3>Download résumé</h3>
+      <p>
+        Full career history with detailed metrics, technology stack, and program delivery
+        outcomes across mortgage tech and enterprise integration platforms.
+      </p>
+      <a href="resume.pdf" class="btn btn-primary" download>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download PDF
+      </a>
+      <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border);">
+        <p style="font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px;">Based in</p>
+        <p style="color: var(--text); font-size: 13px;">Houston, TX · Open to remote &amp; hybrid</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>Built with vanilla HTML · Hosted on GitHub Pages · <span>&copy; 2025 Daniel Garza</span></p>
+</footer>
+
+<script>
+  /* ===== TYPING EFFECT ===== */
+  const phrases = [
+    'TPM with 17+ years in FinTech',
+    'Enterprise integrations specialist',
+    'Building Fuerza Home Services',
+    'Open to new opportunities'
+  ];
+  let phraseIndex = 0, charIndex = 0, deleting = false;
+  const el = document.getElementById('typed-text');
+
+  function type() {
+    const phrase = phrases[phraseIndex];
+    if (!deleting) {
+      el.textContent = phrase.slice(0, ++charIndex);
+      if (charIndex === phrase.length) { deleting = true; setTimeout(type, 2000); return; }
+    } else {
+      el.textContent = phrase.slice(0, --charIndex);
+      if (charIndex === 0) { deleting = false; phraseIndex = (phraseIndex + 1) % phrases.length; }
+    }
+    setTimeout(type, deleting ? 40 : 60);
+  }
+  type();
+
+  /* ===== ACTIVE NAV ===== */
+  const sections = document.querySelectorAll('section[id]');
+  const links = document.querySelectorAll('.nav-links a');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + e.target.id));
+      }
+    });
+  }, { threshold: 0.3 });
+  sections.forEach(s => observer.observe(s));
+
+  /* ===== FADE IN OBSERVER ===== */
+  const fadeEls = document.querySelectorAll('.fade-in');
+  const fadeObs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.1 });
+  fadeEls.forEach(el => fadeObs.observe(el));
+
+  /* ===== GITHUB PROJECTS ===== */
+  const langColors = {
+    JavaScript: '#f1e05a', TypeScript: '#3178c6', Python: '#3572A5',
+    HTML: '#e34c26', CSS: '#563d7c', Java: '#b07219', Go: '#00ADD8',
+    Rust: '#dea584', 'C#': '#239120', Shell: '#89e051', default: '#8b949e'
+  };
+
+  async function loadProjects() {
+    const username = document.getElementById('gh-username').value.trim();
+    if (!username) return;
+    const grid = document.getElementById('projects-grid');
+    grid.innerHTML = '<div class="loading-state"><p class="loading-dots" style="color:var(--muted);font-size:13px;">Fetching repos</p></div>';
+    try {
+      const res = await fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=100`);
+      if (!res.ok) throw new Error('User not found');
+      const repos = await res.json();
+      const filtered = repos
+        .filter(r => !r.fork && !r.archived)
+        .sort((a, b) => (b.stargazers_count - a.stargazers_count) || new Date(b.updated_at) - new Date(a.updated_at))
+        .slice(0, 9);
+      if (!filtered.length) {
+        grid.innerHTML = '<div class="loading-state"><p style="color:var(--muted);font-size:13px;">No public repos found.</p></div>';
+        return;
+      }
+      grid.innerHTML = filtered.map(r => `
+        <a class="project-card" href="${r.html_url}" target="_blank">
+          <div class="project-card-header">
+            <div class="project-icon">
+              <svg viewBox="0 0 24 24" stroke-width="1.5"><path d="M3 3h18v18H3z" rx="2"/><path d="M9 9h6M9 12h4"/></svg>
+            </div>
+            <svg class="project-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 17L17 7M7 7h10v10"/></svg>
+          </div>
+          <div class="project-name">${r.name}</div>
+          <div class="project-desc">${r.description || 'No description provided.'}</div>
+          <div class="project-footer">
+            <div class="project-lang">
+              <span class="lang-dot" style="background:${langColors[r.language] || langColors.default}"></span>
+              ${r.language || 'Unknown'}
+            </div>
+            <div class="project-stars">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              ${r.stargazers_count}
+            </div>
+          </div>
+        </a>
+      `).join('');
+    } catch (err) {
+      grid.innerHTML = `<div class="loading-state"><p style="color:var(--danger);font-size:13px;">Error: ${err.message}</p></div>`;
+    }
+  }
+
+  /* Allow Enter key in input */
+  document.getElementById('gh-username').addEventListener('keydown', e => {
+    if (e.key === 'Enter') loadProjects();
+  });
+</script>
+</body>
+</html>
