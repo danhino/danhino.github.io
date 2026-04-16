@@ -12,7 +12,7 @@ Visit the live site at: [danhino.github.io](https://danhino.github.io)
 ## 📋 Overview
 
 This portfolio highlights:
-- **17+ years** of experience in mortgage and financial services technology
+- **20 years** of experience in mortgage and financial services technology
 - **200+ integrations** delivered across REST and SOAP APIs
 - Expertise in MISMO 3.4, OAuth 2.0/JWT, AWS Lambda, Azure DevOps
 - Leadership in enterprise-scale programs and cross-functional teams
@@ -25,6 +25,7 @@ This portfolio highlights:
 - **Fonts**: Google Fonts (JetBrains Mono, Syne)
 - **Icons**: Inline SVG
 - **Hosting**: GitHub Pages
+- **SEO**: Open Graph, Twitter Cards, JSON-LD structured data
 - **Version Control**: Git
 
 ## 🎨 Features
@@ -37,6 +38,7 @@ This portfolio highlights:
   - Fade-in animations on scroll
   - GitHub projects integration
 - **Performance Optimized**: Lightweight, fast-loading static site
+- **SEO Optimized**: Meta description, Open Graph tags (LinkedIn/Slack/Facebook), Twitter Cards, canonical URL, JSON-LD structured data, and a branded OG preview image
 - **Accessibility**: Semantic HTML and keyboard navigation
 
 ## 📁 Project Structure
@@ -45,6 +47,7 @@ This portfolio highlights:
 danhino.github.io/
 ├── index.html          # Main portfolio page
 ├── favicon.svg         # Site favicon
+├── og-image.png        # Open Graph preview image (1200x630)
 ├── Daniel_Hinojosa_Resume_Styled.pdf    # Resume PDF
 ├── Daniel_Hinojosa_Resume_Styled.docx   # Resume Word doc
 └── README.md           # This file
