@@ -1049,21 +1049,7 @@ function setupTextarea() {
 /* ────────────────────────────────────────────────
    API Key modal
 ──────────────────────────────────────────────── */
-document.getElementById('saveKeyBtn').addEventListener('click', () => {
-  const val = document.getElementById('apiKeyInput').value.trim();
-  if (val.startsWith('sk-ant-')) {
-    apiKey = val;
-    localStorage.setItem('dh_agent_key', val);
-    document.getElementById('apiModal').style.display = 'none';
-  } else {
-    document.getElementById('apiKeyInput').style.borderColor = '#ef4444';
-    document.getElementById('apiKeyInput').placeholder = 'Key must start with sk-ant-...';
-  }
-});
-
-document.getElementById('skipKeyBtn').addEventListener('click', () => {
-  document.getElementById('apiModal').style.display = 'none';
-});
+// API key modal removed — agent uses Cloudflare Worker proxy
 
 /* ────────────────────────────────────────────────
    Messaging
