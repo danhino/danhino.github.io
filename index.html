@@ -865,12 +865,12 @@
   <p class="section-label">// github projects</p>
   <h2 class="section-title">What I've<br><span>been building</span></h2>
   <div class="github-input-bar">
-    <input type="text" id="gh-username" placeholder="Enter GitHub username (e.g. danhino)" />
+    <input type="text" id="gh-username" placeholder="Enter GitHub username" value="danhino" />
     <button class="btn btn-primary" onclick="loadProjects()">Load repos</button>
   </div>
   <div id="projects-grid" class="projects-grid">
     <div class="loading-state">
-      <p style="color: var(--muted); font-size: 13px;">Enter your GitHub username above to load your repositories.</p>
+      <p class="loading-dots" style="color: var(--muted); font-size: 13px;">Loading repositories</p>
     </div>
   </div>
 </section>
@@ -1154,6 +1154,9 @@ const phrases = [
   document.getElementById('gh-username').addEventListener('keydown', e => {
     if (e.key === 'Enter') loadProjects();
   });
+
+  /* Auto-load repos on page load */
+  loadProjects();
 </script>
 </body>
 </html>
