@@ -737,8 +737,12 @@
       line-height: 1.7;
       margin-bottom: 20px;
     }
-
-    /* === FOOTER === */
+   
+    .resume-cta .btn + .btn {
+      margin-top: 12px;
+    }
+    
+ /* === FOOTER === */
     footer {
       border-top: 1px solid var(--border);
       padding: 2rem clamp(1.5rem, 5vw, 4rem);
@@ -1098,14 +1102,14 @@ const phrases = [
     Rust: '#dea584', 'C#': '#239120', Shell: '#89e051', default: '#8b949e'
   };
 
-  async function loadProjects() {
+  async function loadProjects(retries = 2) {
     const username = document.getElementById('gh-username').value.trim();
     if (!username) return;
     const grid = document.getElementById('projects-grid');
     grid.innerHTML = '<div class="loading-state"><p class="loading-dots" style="color:var(--muted);font-size:13px;">Fetching repos</p></div>';
     try {
       const res = await fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=100`);
-      if (!res.ok) throw new Error('User not found');
+      if (!res.ok) throw new Error(res.status === 404 ? 'User not found' : `GitHub API returned ${res.status}`);
       const repos = await res.json();
       const filtered = repos
         .filter(r => !r.fork && !r.archived)
@@ -1138,7 +1142,11 @@ const phrases = [
         </a>
       `).join('');
     } catch (err) {
-      grid.innerHTML = `<div class="loading-state"><p style="color:var(--danger);font-size:13px;">Error: ${err.message}</p></div>`;
+      if (retries > 0) {
+        await new Promise(r => setTimeout(r, 1000));
+        return loadProjects(retries - 1);
+      }
+      grid.innerHTML = `<div class="loading-state"><p style="color:var(--danger);font-size:13px;">Could not load repos. <a href="https://github.com/${username}" target="_blank" style="color:var(--accent);text-decoration:underline;">View on GitHub</a></p></div>`;
     }
   }
 
