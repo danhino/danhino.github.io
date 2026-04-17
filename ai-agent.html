@@ -1098,12 +1098,15 @@ async function sendMessage() {
   // Trim history to avoid token overflow
   const trimmedHistory = conversationHistory.slice(-MAX_HISTORY);
 
+  // Abort after 20s so isLoading never gets permanently stuck
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 20000);
+
   try {
     const resp = await fetch('https://daniel-aiagent-proxy.dan-hinojosa.workers.dev', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
+      signal: controller.signal,
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 600,
@@ -1112,16 +1115,12 @@ async function sendMessage() {
       }),
     });
 
-    removeTyping(typingId);
+    clearTimeout(timeout);
 
     if (!resp.ok) {
       const err = await resp.json().catch(() => ({}));
       const errMsg = err?.error?.message || `API error ${resp.status}`;
-      if (resp.status === 401) {
-        appendMessage('ai', `<strong>Invalid API key.</strong> Please refresh the page and enter a valid Anthropic key starting with <code>sk-ant-</code>.`, true);
-      } else {
-        appendMessage('ai', `API error: ${errMsg}`, true);
-      }
+      appendMessage('ai', `⚠ ${errMsg} — <a href="mailto:dan.hinojosa@gmail.com" style="color:var(--green)">Email Daniel directly.</a>`, true);
     } else {
       const data = await resp.json();
       const reply = data.content?.[0]?.text || 'No response received.';
@@ -1129,13 +1128,18 @@ async function sendMessage() {
       conversationHistory.push({ role: 'assistant', content: reply });
     }
   } catch (e) {
+    clearTimeout(timeout);
+    const msg = e.name === 'AbortError'
+      ? 'Request timed out. Please try again.'
+      : `Connection error: ${e.message}`;
+    appendMessage('ai', `⚠ ${msg} — <a href="mailto:dan.hinojosa@gmail.com" style="color:var(--green)">Email Daniel directly.</a>`, true);
+    console.error('Agent fetch error:', e);
+  } finally {
     removeTyping(typingId);
-    appendMessage('ai', `Network error: ${e.message}. Check your connection and CORS settings.`, true);
+    isLoading = false;
+    document.getElementById('sendBtn').disabled = false;
+    ta.focus();
   }
-
-  isLoading = false;
-  document.getElementById('sendBtn').disabled = false;
-  ta.focus();
 }
 
 function formatReply(text) {
