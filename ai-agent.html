@@ -601,21 +601,116 @@
     .modal-btn-skip { background: transparent; border: 1px solid var(--border); color: var(--muted); }
     .modal-btn-skip:hover { border-color: var(--muted); color: var(--text); }
 
+    /* ── Mobile chip strip (hidden on desktop) ── */
+    .mobile-chip-strip {
+      display: none;
+    }
+
     /* ── Responsive ── */
     @media (max-width: 720px) {
-      .shell { padding: 0 10px; }
-      .main { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+      .shell {
+        padding: 0;
+        height: 100dvh;
+        display: grid;
+        grid-template-rows: auto 1fr;
+      }
+
+      nav {
+        padding: 10px 14px;
+        flex-shrink: 0;
+      }
+      .nav-links { gap: 12px; }
+      .nav-links a { font-size: 10px; }
+
+      .main {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto 1fr;
+        min-height: 0;
+        border-left: none;
+        border-right: none;
+      }
+
+      /* Sidebar collapses to compact top bar */
       .sidebar {
         border-right: none;
         border-bottom: 1px solid var(--border);
-        padding: 14px 12px;
-        gap: 14px;
+        padding: 10px 12px;
+        gap: 8px;
+        flex-direction: column;
+        overflow: visible;
       }
-      .sidebar-header, .resume-cta { display: block; }
-      .cat-btns { flex-direction: row; flex-wrap: wrap; }
-      .cat-btn { padding: 6px 10px; font-size: 11px; }
-      .chips { display: none; }
+
+      .sidebar-header h1 { font-size: 12px; }
+      .sidebar-header p { display: none; }
+
+      /* Category pills scroll horizontally */
+      .cat-btns {
+        flex-direction: row;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        gap: 6px;
+        padding-bottom: 2px;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+      }
+      .cat-btns::-webkit-scrollbar { display: none; }
+
+      .cat-btn {
+        padding: 5px 10px;
+        font-size: 10px;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+      .cat-icon { display: none; }
+
+      /* Hide desktop chip list and resume CTA in sidebar */
+      #chipsSection { display: none; }
       .resume-cta { display: none; }
+
+      /* Mobile chip strip shown below sidebar */
+      .mobile-chip-strip {
+        display: flex;
+        gap: 7px;
+        padding: 8px 12px;
+        border-bottom: 1px solid var(--border);
+        overflow-x: auto;
+        flex-shrink: 0;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        background: var(--bg);
+      }
+      .mobile-chip-strip::-webkit-scrollbar { display: none; }
+
+      .mobile-chip-strip .chip {
+        white-space: nowrap;
+        flex-shrink: 0;
+        padding: 5px 10px;
+        font-size: 10px;
+        border-radius: 20px;
+      }
+      .mobile-chip-strip .chip::before { content: ''; }
+
+      /* Chat pane fills remaining space */
+      .chat-pane {
+        min-height: 0;
+        flex: 1;
+      }
+
+      .chat-header { padding: 10px 14px; }
+      .chat-header-text h2 { font-size: 12px; }
+      .chat-header-text p { font-size: 9px; }
+
+      .messages { padding: 14px 12px; gap: 12px; }
+
+      .msg-bubble { font-size: 13px; max-width: 88%; }
+
+      .input-area { padding: 10px 12px; }
+      .input-hint { display: none; }
+
+      .welcome-msg { padding: 20px 12px; }
+      .welcome-msg h3 { font-size: 14px; }
+      .welcome-chips { gap: 5px; }
+      .welcome-chip { font-size: 11px; padding: 5px 10px; }
     }
 
     /* Smooth fade-in for messages */
@@ -684,6 +779,9 @@
       </div>
 
     </aside>
+
+    <!-- ── Mobile chip strip (visible on small screens only) ── -->
+    <div class="mobile-chip-strip" id="mobileChips"></div>
 
     <!-- ── Chat Pane ── -->
     <section class="chat-pane">
@@ -885,14 +983,25 @@ window.addEventListener('DOMContentLoaded', () => {
 
 function renderChips(cat) {
   const list = document.getElementById('chipsList');
+  const mobileList = document.getElementById('mobileChips');
   list.innerHTML = '';
+  mobileList.innerHTML = '';
   (CHIPS[cat] || CHIPS.all).forEach(q => {
+    // Desktop sidebar chip
     const btn = document.createElement('button');
     btn.className = 'chip';
     btn.textContent = q;
     btn.onclick = () => sendQuestion(q);
     list.appendChild(btn);
+    // Mobile horizontal strip chip
+    const mBtn = document.createElement('button');
+    mBtn.className = 'chip';
+    mBtn.textContent = q;
+    mBtn.onclick = () => sendQuestion(q);
+    mobileList.appendChild(mBtn);
   });
+  // Scroll mobile strip back to start on category change
+  mobileList.scrollLeft = 0;
 }
 
 function renderWelcomeChips() {
@@ -936,6 +1045,25 @@ function setupTextarea() {
     }
   });
 }
+
+/* ────────────────────────────────────────────────
+   API Key modal
+──────────────────────────────────────────────── */
+document.getElementById('saveKeyBtn').addEventListener('click', () => {
+  const val = document.getElementById('apiKeyInput').value.trim();
+  if (val.startsWith('sk-ant-')) {
+    apiKey = val;
+    localStorage.setItem('dh_agent_key', val);
+    document.getElementById('apiModal').style.display = 'none';
+  } else {
+    document.getElementById('apiKeyInput').style.borderColor = '#ef4444';
+    document.getElementById('apiKeyInput').placeholder = 'Key must start with sk-ant-...';
+  }
+});
+
+document.getElementById('skipKeyBtn').addEventListener('click', () => {
+  document.getElementById('apiModal').style.display = 'none';
+});
 
 /* ────────────────────────────────────────────────
    Messaging
@@ -990,7 +1118,7 @@ async function sendMessage() {
       const err = await resp.json().catch(() => ({}));
       const errMsg = err?.error?.message || `API error ${resp.status}`;
       if (resp.status === 401) {
-        appendMessage('ai', `Authentication error. Please try again or contact Daniel at dan.hinojosa@gmail.com`, true);
+        appendMessage('ai', `<strong>Invalid API key.</strong> Please refresh the page and enter a valid Anthropic key starting with <code>sk-ant-</code>.`, true);
       } else {
         appendMessage('ai', `API error: ${errMsg}`, true);
       }
