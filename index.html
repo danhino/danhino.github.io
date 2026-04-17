@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Daniel Hinojosa | Technical Program Manager | Enterprise Integrations & API Platforms</title>
+  <title>Daniel Hinojosa</title>
   <meta name="description" content="Technical Program Manager with 20 years in mortgage and financial services technology. Specializing in enterprise integrations, API/middleware platforms, and SaaS delivery. Based in Houston, TX." />
   <meta name="keywords" content="Technical Program Manager, TPM, Enterprise Integrations, API Platforms, Middleware, SaaS, Mortgage Technology, FinTech, OAuth, REST API, SOAP, MISMO, Azure DevOps, Houston TX" />
   <meta name="author" content="Daniel Hinojosa" />
@@ -1642,9 +1642,9 @@ PROFILE SUMMARY:
         },
         body: JSON.stringify({
           model: 'claude-haiku-4-5-20251001',
-          max_tokens: 600,
-          system: SYSTEM_PROMPT,
-          messages: trimmedHistory,
+          max_tokens: 400,
+          system: W_SYSTEM,
+          messages: wHistory.slice(-8),
         }),
       });
 
@@ -1653,6 +1653,7 @@ PROFILE SUMMARY:
       if (!resp.ok) {
         const e = await resp.json().catch(()=>({}));
         wAppendMsg('ai', `Error ${resp.status}: ${e?.error?.message || 'API error'}. <a href="mailto:dan.hinojosa@gmail.com" style="color:#4ade80">Contact Daniel directly.</a>`);
+        // 401 handled by error message above
       } else {
         const data = await resp.json();
         const reply = data.content?.[0]?.text || 'No response.';
@@ -1660,12 +1661,13 @@ PROFILE SUMMARY:
         wHistory.push({ role: 'assistant', content: reply });
       }
     } catch(e) {
+      wAppendMsg('ai', `⚠ ${e.message || 'Connection error'}. <a href="mailto:dan.hinojosa@gmail.com" style="color:#4ade80">Email Daniel directly.</a>`);
+      console.error('Widget error:', e);
+    } finally {
       wRemoveTyping(tid);
-      wAppendMsg('ai', `Network error. <a href="mailto:dan.hinojosa@gmail.com" style="color:#4ade80">Email Daniel directly.</a>`);
+      wLoading = false;
+      document.getElementById('dh-wsend').disabled = false;
     }
-
-    wLoading = false;
-    document.getElementById('dh-wsend').disabled = false;
   };
 
   function wFormat(t) {
