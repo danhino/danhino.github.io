@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ask Daniel · AI Resume Agent</title>
+  <meta name="description" content="Chat with an AI agent trained on Daniel Hinojosa's resume, work experience, and projects." />
+  <link rel="canonical" href="https://danhino.github.io/ai-agent" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ── Design Tokens ── */
+    :root {
+      --bg:        #0a0d0f;
+      --surface:   #111518;
+      --border:    #1e2529;
+      --border-hi: #2e3b42;
+      --green:     #4ade80;
+      --green-dim: #1a3d27;
+      --green-glow:rgba(74,222,128,0.12);
+      --amber:     #fbbf24;
+      --muted:     #4a5568;
+      --text:      #d1d5db;
+      --text-hi:   #f3f4f6;
+      --user-bg:   #162b20;
+      --ai-bg:     #111518;
+      --radius:    6px;
+      --mono:      'IBM Plex Mono', 'Courier New', monospace;
+      --sans:      'IBM Plex Sans', system-ui, sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 15px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Scanline overlay ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.04) 2px,
+        rgba(0,0,0,0.04) 4px
+      );
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* ── Layout ── */
+    .shell {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      height: 100dvh;
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 0 16px;
+    }
+
+    /* ── Nav ── */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .nav-brand {
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--green);
+      text-decoration: none;
+      letter-spacing: 0.04em;
+    }
+    .nav-brand span { color: var(--muted); }
+    .nav-links { display: flex; gap: 20px; }
+    .nav-links a {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      text-decoration: none;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--green); }
+
+    /* ── Main content ── */
+    .main {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 0;
+      min-height: 0;
+      border: 1px solid var(--border);
+      border-top: none;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      padding: 20px 16px;
+      gap: 24px;
+    }
+
+    .sidebar-header h1 {
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-hi);
+      letter-spacing: 0.02em;
+    }
+    .sidebar-header p {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 4px;
+      font-family: var(--mono);
+    }
+    .status-dot {
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      margin-right: 6px;
+      box-shadow: 0 0 6px var(--green);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%,100% { opacity: 1; } 50% { opacity: 0.4; }
+    }
+
+    .section-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    /* Category buttons */
+    .cat-btns {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .cat-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 12px;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.15s;
+    }
+    .cat-btn:hover, .cat-btn.active {
+      border-color: var(--green);
+      background: var(--green-glow);
+      color: var(--green);
+    }
+    .cat-icon {
+      font-size: 14px;
+      width: 18px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    /* Chip questions */
+    .chips {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .chip {
+      padding: 6px 10px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--muted);
+      font-size: 11px;
+      font-family: var(--mono);
+      cursor: pointer;
+      text-align: left;
+      line-height: 1.4;
+      transition: all 0.15s;
+    }
+    .chip:hover {
+      border-color: var(--green-dim);
+      background: var(--green-glow);
+      color: var(--text);
+    }
+    .chip::before { content: '→ '; color: var(--green); }
+
+    /* Download CTA */
+    .resume-cta {
+      margin-top: auto;
+      padding: 14px;
+      border: 1px solid var(--green-dim);
+      border-radius: var(--radius);
+      background: rgba(74,222,128,0.04);
+    }
+    .resume-cta p {
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 10px;
+      font-family: var(--mono);
+      line-height: 1.5;
+    }
+    .resume-cta p strong { color: var(--text); }
+    .btn-download {
+      display: block;
+      width: 100%;
+      padding: 9px 12px;
+      background: transparent;
+      border: 1px solid var(--green);
+      border-radius: var(--radius);
+      color: var(--green);
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-align: center;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 6px;
+    }
+    .btn-download:hover {
+      background: var(--green);
+      color: var(--bg);
+    }
+    .btn-download-secondary {
+      display: block;
+      width: 100%;
+      padding: 7px 12px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 11px;
+      text-align: center;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .btn-download-secondary:hover {
+      border-color: var(--muted);
+      color: var(--text);
+    }
+
+    /* ── Chat pane ── */
+    .chat-pane {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .chat-header {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+    .chat-header-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--green-dim);
+      border: 1px solid var(--green);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--green);
+      flex-shrink: 0;
+    }
+    .chat-header-text h2 {
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-hi);
+    }
+    .chat-header-text p {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 1px;
+    }
+    .model-badge {
+      margin-left: auto;
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 3px 8px;
+      border-radius: 20px;
+      letter-spacing: 0.05em;
+    }
+
+    /* Messages */
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      scroll-behavior: smooth;
+    }
+    .messages::-webkit-scrollbar { width: 4px; }
+    .messages::-webkit-scrollbar-track { background: transparent; }
+    .messages::-webkit-scrollbar-thumb { background: var(--border-hi); border-radius: 4px; }
+
+    .message { display: flex; gap: 10px; }
+    .message.user { flex-direction: row-reverse; }
+
+    .msg-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 600;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .message.ai .msg-avatar {
+      background: var(--green-dim);
+      border: 1px solid var(--green);
+      color: var(--green);
+    }
+    .message.user .msg-avatar {
+      background: #1a2535;
+      border: 1px solid #2a3d55;
+      color: #60a5fa;
+    }
+
+    .msg-bubble {
+      max-width: 82%;
+      padding: 12px 15px;
+      border-radius: var(--radius);
+      font-size: 13.5px;
+      line-height: 1.65;
+    }
+    .message.ai .msg-bubble {
+      background: var(--ai-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .message.user .msg-bubble {
+      background: var(--user-bg);
+      border: 1px solid var(--green-dim);
+      color: var(--text-hi);
+    }
+
+    .msg-bubble strong { color: var(--green); font-weight: 600; }
+    .msg-bubble em { color: var(--amber); font-style: normal; }
+    .msg-bubble code {
+      font-family: var(--mono);
+      font-size: 12px;
+      background: rgba(255,255,255,0.06);
+      padding: 1px 5px;
+      border-radius: 3px;
+      color: var(--green);
+    }
+    .msg-bubble ul { padding-left: 16px; margin-top: 6px; }
+    .msg-bubble li { margin-bottom: 4px; }
+    .msg-bubble p + p { margin-top: 8px; }
+
+    /* Typing indicator */
+    .typing-indicator {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 12px 15px;
+      background: var(--ai-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      width: fit-content;
+    }
+    .typing-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: blink 1.2s ease-in-out infinite;
+    }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes blink {
+      0%,80%,100% { opacity: 0.2; transform: scale(0.85); }
+      40% { opacity: 1; transform: scale(1); }
+    }
+
+    /* Welcome message */
+    .welcome-msg {
+      text-align: center;
+      padding: 30px 20px;
+    }
+    .welcome-msg h3 {
+      font-family: var(--mono);
+      font-size: 16px;
+      color: var(--text-hi);
+      margin-bottom: 8px;
+    }
+    .welcome-msg p {
+      font-size: 13px;
+      color: var(--muted);
+      max-width: 440px;
+      margin: 0 auto 18px;
+    }
+    .welcome-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: center;
+    }
+    .welcome-chip {
+      padding: 6px 12px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      color: var(--muted);
+      font-size: 12px;
+      cursor: pointer;
+      font-family: var(--mono);
+      transition: all 0.15s;
+    }
+    .welcome-chip:hover {
+      border-color: var(--green);
+      color: var(--green);
+      background: var(--green-glow);
+    }
+
+    /* Error */
+    .msg-error {
+      background: rgba(239,68,68,0.08) !important;
+      border-color: rgba(239,68,68,0.3) !important;
+      color: #fca5a5 !important;
+    }
+
+    /* ── Input ── */
+    .input-area {
+      padding: 14px 20px;
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .input-row {
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+    }
+    .input-wrap {
+      flex: 1;
+      position: relative;
+    }
+    textarea {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text-hi);
+      font-family: var(--mono);
+      font-size: 13px;
+      padding: 10px 12px;
+      resize: none;
+      outline: none;
+      transition: border-color 0.2s;
+      min-height: 42px;
+      max-height: 120px;
+      line-height: 1.5;
+    }
+    textarea:focus { border-color: var(--green); }
+    textarea::placeholder { color: var(--muted); }
+    .send-btn {
+      width: 42px;
+      height: 42px;
+      background: var(--green);
+      border: none;
+      border-radius: var(--radius);
+      color: var(--bg);
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+    .send-btn:hover { background: #6ee7a0; }
+    .send-btn:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
+    .input-hint {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 6px;
+      display: flex;
+      justify-content: space-between;
+    }
+    #char-count { color: var(--muted); }
+    #char-count.warn { color: var(--amber); }
+
+    /* ── API key modal ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-box {
+      background: var(--surface);
+      border: 1px solid var(--border-hi);
+      border-radius: 10px;
+      padding: 28px;
+      max-width: 480px;
+      width: 100%;
+    }
+    .modal-box h3 {
+      font-family: var(--mono);
+      font-size: 15px;
+      color: var(--text-hi);
+      margin-bottom: 8px;
+    }
+    .modal-box p {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 16px;
+      line-height: 1.6;
+    }
+    .modal-box p a { color: var(--green); }
+    .modal-input {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text-hi);
+      font-family: var(--mono);
+      font-size: 13px;
+      padding: 10px 12px;
+      outline: none;
+      margin-bottom: 12px;
+      transition: border-color 0.2s;
+    }
+    .modal-input:focus { border-color: var(--green); }
+    .modal-note {
+      font-size: 11px;
+      color: var(--muted);
+      font-family: var(--mono);
+      margin-bottom: 16px;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      line-height: 1.6;
+    }
+    .modal-btns { display: flex; gap: 8px; }
+    .modal-btn {
+      flex: 1;
+      padding: 10px;
+      border-radius: var(--radius);
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.04em;
+    }
+    .modal-btn-primary { background: var(--green); border: 1px solid var(--green); color: var(--bg); }
+    .modal-btn-primary:hover { background: #6ee7a0; }
+    .modal-btn-skip { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+    .modal-btn-skip:hover { border-color: var(--muted); color: var(--text); }
+
+    /* ── Responsive ── */
+    @media (max-width: 720px) {
+      .shell { padding: 0 10px; }
+      .main { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+      .sidebar {
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        padding: 14px 12px;
+        gap: 14px;
+      }
+      .sidebar-header, .resume-cta { display: block; }
+      .cat-btns { flex-direction: row; flex-wrap: wrap; }
+      .cat-btn { padding: 6px 10px; font-size: 11px; }
+      .chips { display: none; }
+      .resume-cta { display: none; }
+    }
+
+    /* Smooth fade-in for messages */
+    @keyframes fadeSlide {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .message { animation: fadeSlide 0.25s ease; }
+  </style>
+</head>
+<body>
+
+<!-- ── Shell ── -->
+<div class="shell">
+
+  <nav>
+    <a class="nav-brand" href="https://danhino.github.io">DANHINO<span>.github.io</span></a>
+    <div class="nav-links">
+      <a href="https://danhino.github.io#about">About</a>
+      <a href="https://danhino.github.io#experience">Experience</a>
+      <a href="https://danhino.github.io#projects">Projects</a>
+      <a href="https://danhino.github.io#contact">Contact</a>
+    </div>
+  </nav>
+
+  <div class="main">
+
+    <!-- ── Sidebar ── -->
+    <aside class="sidebar">
+
+      <div class="sidebar-header">
+        <h1><span class="status-dot"></span>Daniel's AI Agent</h1>
+        <p>// Ask anything about my background</p>
+      </div>
+
+      <div>
+        <div class="section-label">Categories</div>
+        <div class="cat-btns">
+          <button class="cat-btn active" data-cat="all" onclick="filterCat(this,'all')">
+            <span class="cat-icon">⬡</span> All Topics
+          </button>
+          <button class="cat-btn" data-cat="experience" onclick="filterCat(this,'experience')">
+            <span class="cat-icon">◈</span> Experience
+          </button>
+          <button class="cat-btn" data-cat="skills" onclick="filterCat(this,'skills')">
+            <span class="cat-icon">◇</span> Skills
+          </button>
+          <button class="cat-btn" data-cat="projects" onclick="filterCat(this,'projects')">
+            <span class="cat-icon">◻</span> Projects
+          </button>
+          <button class="cat-btn" data-cat="contact" onclick="filterCat(this,'contact')">
+            <span class="cat-icon">◎</span> Contact
+          </button>
+        </div>
+      </div>
+
+      <div id="chipsSection">
+        <div class="section-label">Suggested Questions</div>
+        <div class="chips" id="chipsList"></div>
+      </div>
+
+      <div class="resume-cta">
+        <p><strong>Want the full picture?</strong><br/>Download Daniel's résumé with detailed metrics and tech stack.</p>
+        <a class="btn-download" href="https://danhino.github.io/Daniel_Hinojosa_Resume_Styled.pdf" target="_blank">⬇ Download PDF</a>
+        <a class="btn-download-secondary" href="https://danhino.github.io/Daniel_Hinojosa_Resume_Styled.docx" target="_blank">⬇ Download DOCX</a>
+      </div>
+
+    </aside>
+
+    <!-- ── Chat Pane ── -->
+    <section class="chat-pane">
+
+      <div class="chat-header">
+        <div class="chat-header-icon">DH</div>
+        <div class="chat-header-text">
+          <h2>Ask Daniel</h2>
+          <p>TPM · Enterprise Integrations · API Platforms · 20 yrs exp.</p>
+        </div>
+        <div class="model-badge">claude-sonnet</div>
+      </div>
+
+      <div class="messages" id="messages">
+        <div class="welcome-msg" id="welcomeMsg">
+          <h3>👋 Hey there — I'm Daniel's AI agent</h3>
+          <p>I know everything about Daniel's career: his 20 years in mortgage tech and financial services, the platforms he built, and what he's looking for next. Ask me anything.</p>
+          <div class="welcome-chips" id="welcomeChips"></div>
+        </div>
+      </div>
+
+      <div class="input-area">
+        <div class="input-row">
+          <div class="input-wrap">
+            <textarea
+              id="userInput"
+              rows="1"
+              placeholder="Ask about Daniel's experience, skills, availability..."
+              maxlength="600"
+            ></textarea>
+          </div>
+          <button class="send-btn" id="sendBtn" onclick="sendMessage()" title="Send">
+            ↑
+          </button>
+        </div>
+        <div class="input-hint">
+          <span>Press <kbd>Enter</kbd> to send · <kbd>Shift+Enter</kbd> for newline</span>
+          <span id="char-count">0 / 600</span>
+        </div>
+      </div>
+
+    </section>
+  </div>
+</div>
+
+<!-- ── Scripts ── -->
+<script>
+/* ────────────────────────────────────────────────
+   SYSTEM PROMPT — Daniel's full profile
+   Update this whenever your resume changes.
+──────────────────────────────────────────────── */
+const SYSTEM_PROMPT = `You are an AI agent representing Daniel Hinojosa's professional profile on his portfolio website. You speak on his behalf in first person, with a professional, concise, and approachable tone. You answer recruiter and hiring manager questions about Daniel's work history, technical skills, projects, and career goals.
+
+IMPORTANT RULES:
+- Always be accurate. Only state what is documented below.
+- Keep answers concise (2-4 sentences unless a list is more helpful).
+- Use bullet points for multi-item answers.
+- For contact / interview requests, direct them to dan.hinojosa@gmail.com or https://linkedin.com/in/danhinojosa
+- If asked something not in your profile data, say: "That detail isn't in my profile, but you can reach Daniel directly at dan.hinojosa@gmail.com."
+- Do not make up metrics, dates, or technologies not listed below.
+
+═══════════════════════════════
+DANIEL HINOJOSA — PROFILE DATA
+═══════════════════════════════
+
+IDENTITY:
+- Full name: Daniel Hinojosa
+- Title: Technical Program Manager
+- Location: Houston, TX (Pearland area)
+- Open to: Remote, hybrid, and on-site roles
+- Languages: English and Spanish (bilingual, professional proficiency)
+- Email: dan.hinojosa@gmail.com
+- LinkedIn: linkedin.com/in/danhinojosa
+- GitHub: github.com/danhino
+- Portfolio: danhino.github.io
+
+CAREER SUMMARY:
+Nearly 20 years of experience in mortgage and financial services technology, specializing in enterprise API integrations, middleware platform management, SaaS platform delivery, and large-scale program execution. Recently expanded into independent consulting and hands-on app development. Actively seeking TPM, Enterprise PM, and integration-focused roles. Also available for IT consulting engagements and technical advisory work. Particular interest in FinTech, mortgage tech, or platform-scale companies.
+
+EXPERIENCE:
+
+1. Independent Consultant (2025 – Present) | Self-employed
+   Project A – AI Claims Processor for a Regional ER Facility (Aug–Dec 2025)
+   - Architected and delivered an AI-powered ERA/EOB claims processing application for a regional emergency care provider
+   - Slashed claim triage time from 1–2 days to under 90 seconds using NLP-driven document parsing
+   - Owned full project lifecycle: requirements, stack selection, build timeline, QA, documentation, and go-live support
+   - Tech: AI/NLP, document parsing, end-to-end delivery
+   Project B – Maintenance Ticketing System for AGT Unlimited (Dec 2025–Feb 2026)
+   - Built a mobile/web-based maintenance ticketing system using Airtable AI App Builder
+   - Tracked work orders, service requests, and resolution status across medical facility operations
+   - Implemented automated ticket creation (email + manual), real-time dashboards, and AI-assisted categorization
+
+2. Technical Program Manager | Dark Matter Technologies (2016–2025) | 9 years
+   - Managed onshore and offshore engineering teams delivering root-cause analysis and development for high-profile mortgage lending clients
+   - Owned the Exchange Service Network platform — a SaaS integration backbone scaling to 200+ third-party integrations for LOS clients via REST and SOAP APIs
+   - Governed full SDLC for partner onboardings, enforcing MISMO 3.4 compliance across all integration touchpoints
+   - Cut integration delivery time by 30% by standardizing OAuth 2.0 / JWT authentication patterns across the partner ecosystem
+   - Aligned engineering, product, and compliance teams to deliver regulatory releases on schedule with zero compliance gaps
+   - Platform connected lenders to 16,000+ third-party service providers
+
+3. Application Development Lead | AIG Valic (2006–2016) | 10 years
+   - Served as primary SME across project lifecycle advising IT leaders, PMs, vendors, and offshore contractors
+   - Delivered end-to-end technology solutions for Call Center and Financial Advisor platforms
+   - Architected a dynamic pricing engine that drove a 15% revenue increase through real-time pricing optimization
+   - Led enterprise migration from legacy AS/400 systems to modern .NET, Oracle, and WebSphere architecture
+
+4. Technical Support Team Lead | Getronics IT Solutions (2001–2006) | 5 years
+   - Directed 24/7 enterprise support operations for a 12-engineer team, sustaining 99% SLA attainment
+   - Oversaw staffing, performance management, escalation resolution, and continuous improvement programs
+
+TECHNICAL SKILLS:
+- Integration & APIs: REST, SOAP, OAuth 2.0, JWT, MISMO 3.4, Postman, middleware platforms
+- Cloud & DevOps: AWS Lambda, Azure DevOps, ServiceNow, Cloudflare
+- Mobile/Frontend: React Native, Expo Router, TypeScript
+- Backend: Node.js, Express, PostgreSQL, Prisma ORM
+- State/Payments: Zustand, Stripe, Stripe Connect Express
+- Tools: Lucidchart, Airtable, GitHub, VS Code
+- Legacy/Enterprise: C#, .NET, Oracle, WebSphere, AS/400
+- PM Methodologies: Agile, SAFe, Waterfall, Hybrid, Planning Poker, Fibonacci estimation
+- Mortgage/Fin domain: LOS (Empower), ICE MSP, SoftPro, Ramquest, Resware, MISMO 3.4
+
+CURRENT PROJECT — Fuerza Home Services:
+- A bilingual (English/Spanish) on-demand marketplace for home service trades in Texas
+- Target market: Latino communities in Texas and Southwest US
+- Six trade categories: Plumbing, Electrical, HVAC, Pool Service, House Cleaning, General Handyman
+- Tech stack: React Native + Expo Router, TypeScript, Node.js/Express, PostgreSQL/Prisma, Zustand, Stripe Connect
+- Features: Customer and Technician roles, real-time job matching via Socket.io, Firebase push notifications, Cloudflare R2 photo storage, EAS Build for App Store deployment
+- Business model: $2.99 customer booking fee, 12% technician commission on completed jobs, Instant Pay cashouts
+- GitHub: github.com/danhino/fuerza-home-services
+
+EDUCATION & CERTIFICATIONS:
+- Deep practitioner knowledge in Agile/SAFe, Azure DevOps Boards (Epics, Features, Stories, Tasks), SDLC governance
+- Self-directed technical development in React Native, TypeScript, Node.js, PostgreSQL, Stripe APIs
+
+WHAT DANIEL IS LOOKING FOR:
+- Roles: Technical Program Manager, Enterprise PM, Integration PM, IT Development Manager, Product Manager
+- Industries: FinTech, mortgage tech, platform-scale SaaS, healthcare tech
+- Setting: Open to remote, hybrid, or on-site in Houston TX or elsewhere
+- Also available for independent consulting and technical advisory engagements
+- Compensation: Open to discussing based on role scope
+
+CONTACT / SCHEDULING:
+- Email: dan.hinojosa@gmail.com
+- LinkedIn: https://linkedin.com/in/danhinojosa
+- For interview scheduling or consulting inquiries, reach out via email or LinkedIn`;
+
+/* ────────────────────────────────────────────────
+   Chip definitions by category
+──────────────────────────────────────────────── */
+const CHIPS = {
+  all: [
+    "What makes Daniel stand out as a TPM?",
+    "Is Daniel open to remote roles?",
+    "What's Daniel's current availability?",
+    "Can you summarize Daniel's background in one minute?",
+  ],
+  experience: [
+    "Tell me about the Exchange platform at Dark Matter Technologies.",
+    "What did Daniel accomplish at AIG Valic?",
+    "How long has Daniel been in mortgage tech?",
+    "What was the biggest program Daniel delivered?",
+  ],
+  skills: [
+    "What API and integration technologies does Daniel know?",
+    "Does Daniel have hands-on coding experience?",
+    "What cloud platforms has Daniel worked with?",
+    "How does Daniel approach Agile delivery?",
+  ],
+  projects: [
+    "What is Fuerza Home Services?",
+    "Tell me about the AI claims processor project.",
+    "What tech stack does Daniel use for side projects?",
+    "Does Daniel have full-stack development experience?",
+  ],
+  contact: [
+    "How can I reach Daniel for an interview?",
+    "Is Daniel open to consulting engagements?",
+    "What roles is Daniel targeting right now?",
+    "Where is Daniel located?",
+  ],
+};
+
+/* ────────────────────────────────────────────────
+   State
+──────────────────────────────────────────────── */
+let conversationHistory = [];
+let isLoading = false;
+let currentCat = 'all';
+const MAX_HISTORY = 12; // keep last 6 turns
+
+/* ────────────────────────────────────────────────
+   Init
+──────────────────────────────────────────────── */
+window.addEventListener('DOMContentLoaded', () => {
+  renderChips('all');
+  renderWelcomeChips();
+  setupTextarea();
+});
+
+function renderChips(cat) {
+  const list = document.getElementById('chipsList');
+  list.innerHTML = '';
+  (CHIPS[cat] || CHIPS.all).forEach(q => {
+    const btn = document.createElement('button');
+    btn.className = 'chip';
+    btn.textContent = q;
+    btn.onclick = () => sendQuestion(q);
+    list.appendChild(btn);
+  });
+}
+
+function renderWelcomeChips() {
+  const container = document.getElementById('welcomeChips');
+  const featured = [
+    "What's Daniel's specialty?",
+    "Is he open to remote work?",
+    "What tech stack does he use?",
+    "How do I contact Daniel?",
+  ];
+  featured.forEach(q => {
+    const btn = document.createElement('button');
+    btn.className = 'welcome-chip';
+    btn.textContent = q;
+    btn.onclick = () => sendQuestion(q);
+    container.appendChild(btn);
+  });
+}
+
+function filterCat(el, cat) {
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  currentCat = cat;
+  renderChips(cat);
+}
+
+function setupTextarea() {
+  const ta = document.getElementById('userInput');
+  const cc = document.getElementById('char-count');
+  ta.addEventListener('input', () => {
+    const n = ta.value.length;
+    cc.textContent = `${n} / 600`;
+    cc.className = n > 500 ? 'warn' : '';
+    ta.style.height = 'auto';
+    ta.style.height = Math.min(ta.scrollHeight, 120) + 'px';
+  });
+  ta.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+}
+
+/* ────────────────────────────────────────────────
+   Messaging
+──────────────────────────────────────────────── */
+function sendQuestion(q) {
+  document.getElementById('userInput').value = q;
+  sendMessage();
+}
+
+async function sendMessage() {
+  if (isLoading) return;
+  const ta = document.getElementById('userInput');
+  const text = ta.value.trim();
+  if (!text) return;
+
+  // Remove welcome screen
+  const w = document.getElementById('welcomeMsg');
+  if (w) w.remove();
+
+  ta.value = '';
+  ta.style.height = 'auto';
+  document.getElementById('char-count').textContent = '0 / 600';
+
+  appendMessage('user', text);
+  conversationHistory.push({ role: 'user', content: text });
+
+
+  const typingId = showTyping();
+  isLoading = true;
+  document.getElementById('sendBtn').disabled = true;
+
+  // Trim history to avoid token overflow
+  const trimmedHistory = conversationHistory.slice(-MAX_HISTORY);
+
+  try {
+    const resp = await fetch('https://daniel-aiagent-proxy.dan-hinojosa.workers.dev', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 600,
+        system: SYSTEM_PROMPT,
+        messages: trimmedHistory,
+      }),
+    });
+
+    removeTyping(typingId);
+
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      const errMsg = err?.error?.message || `API error ${resp.status}`;
+      if (resp.status === 401) {
+        appendMessage('ai', `Authentication error. Please try again or contact Daniel at dan.hinojosa@gmail.com`, true);
+      } else {
+        appendMessage('ai', `API error: ${errMsg}`, true);
+      }
+    } else {
+      const data = await resp.json();
+      const reply = data.content?.[0]?.text || 'No response received.';
+      appendMessage('ai', formatReply(reply));
+      conversationHistory.push({ role: 'assistant', content: reply });
+    }
+  } catch (e) {
+    removeTyping(typingId);
+    appendMessage('ai', `Network error: ${e.message}. Check your connection and CORS settings.`, true);
+  }
+
+  isLoading = false;
+  document.getElementById('sendBtn').disabled = false;
+  ta.focus();
+}
+
+function formatReply(text) {
+  // Bold **text**
+  text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  // Italic *text* or _text_
+  text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
+  // Inline code
+  text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
+  // Bullet points
+  text = text.replace(/^[-•] (.+)$/gm, '<li>$1</li>');
+  text = text.replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>');
+  // Newlines to paragraphs (rough)
+  text = text.split('\n\n').map(p => p.trim()).filter(Boolean)
+    .map(p => p.startsWith('<ul>') ? p : `<p>${p.replace(/\n/g,'<br/>')}</p>`)
+    .join('');
+  return text;
+}
+
+function appendMessage(role, html, isError = false) {
+  const msgs = document.getElementById('messages');
+  const div = document.createElement('div');
+  div.className = `message ${role}`;
+  const avatar = document.createElement('div');
+  avatar.className = 'msg-avatar';
+  avatar.textContent = role === 'ai' ? 'DH' : 'You';
+  const bubble = document.createElement('div');
+  bubble.className = `msg-bubble${isError ? ' msg-error' : ''}`;
+  bubble.innerHTML = html;
+  div.appendChild(avatar);
+  div.appendChild(bubble);
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+let typingCount = 0;
+function showTyping() {
+  const id = `typing-${typingCount++}`;
+  const msgs = document.getElementById('messages');
+  const div = document.createElement('div');
+  div.className = 'message ai';
+  div.id = id;
+  div.innerHTML = `
+    <div class="msg-avatar">DH</div>
+    <div class="typing-indicator">
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+    </div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  return id;
+}
+
+function removeTyping(id) {
+  const el = document.getElementById(id);
+  if (el) el.remove();
+}
+</script>
+</body>
+</html>
