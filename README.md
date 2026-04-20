@@ -14,21 +14,22 @@ Chat with the AI agent at: [danhino.github.io/ai-agent.html](https://danhino.git
 ## 📋 Overview
 
 This portfolio highlights:
-- **20 years** of experience in mortgage and financial services technology
+- **20+ years** of experience in mortgage and financial services technology
 - **200+ integrations** delivered across REST and SOAP APIs
 - Expertise in MISMO 3.4, OAuth 2.0/JWT, AWS Lambda, Azure DevOps
 - Leadership in enterprise-scale programs and cross-functional teams
-- Personal projects including Fuerza Home Services (React Native app)
+- Independent consulting projects: AI claims processor (ERA/EOB) and maintenance ticketing system
+- Side project: Fuerza Home Services (React Native bilingual home services marketplace)
 - **AI-powered resume agent** for recruiters and hiring managers
 
 ## 🛠️ Technologies Used
 
 - **Frontend**: Vanilla HTML5, CSS3, JavaScript (ES6+)
 - **Styling**: Custom CSS with CSS Variables for theming
-- **Fonts**: Google Fonts (JetBrains Mono, Syne, IBM Plex Mono)
+- **Fonts**: Google Fonts (JetBrains Mono, Syne, IBM Plex Mono, IBM Plex Sans)
 - **Icons**: Inline SVG
 - **Hosting**: GitHub Pages
-- **AI Agent**: Anthropic Claude API (claude-haiku) via Cloudflare Worker proxy
+- **AI Agent**: Anthropic Claude API (`claude-haiku-4-5-20251001`) via Cloudflare Worker proxy
 - **SEO**: Open Graph, Twitter Cards, JSON-LD structured data
 - **Version Control**: Git
 
@@ -48,6 +49,7 @@ This portfolio highlights:
   - Clickable recruiter question chips
   - Download Resume CTA (PDF + DOCX)
   - Mobile-responsive with horizontal scrolling chip strip
+  - Covers full competency profile: cloud/infra (AWS, Terraform), observability (CloudWatch, Splunk), AI/NLP, Agile delivery, and more
 - **Performance Optimized**: Lightweight, fast-loading static site
 - **SEO Optimized**: Meta description, Open Graph tags, Twitter Cards, canonical URL, JSON-LD structured data
 - **Accessibility**: Semantic HTML and keyboard navigation
@@ -58,7 +60,8 @@ This portfolio highlights:
 danhino.github.io/
 ├── index.html                           # Main portfolio page (with floating AI widget)
 ├── ai-agent.html                        # Full-page AI resume agent
-├── favicon.svg                          # Site favicon
+├── favicon.svg                          # Site favicon (portfolio)
+├── favicon-agent.svg                    # Site favicon (AI agent page)
 ├── og-image.png                         # Open Graph preview image (1200x630)
 ├── Daniel_Hinojosa_Resume_Styled.pdf    # Resume PDF
 ├── Daniel_Hinojosa_Resume_Styled.docx   # Resume Word doc
@@ -81,7 +84,7 @@ Browser → Cloudflare Worker (proxy) → Anthropic Claude API
 - Rate limiting: 20 requests per IP per hour via Cloudflare Workers KV
 
 **Cloudflare Worker:** `daniel-aiagent-proxy.dan-hinojosa.workers.dev`
-**Model:** `claude-haiku-4-5` (fast, cost-efficient for conversational Q&A)
+**Model:** `claude-haiku-4-5-20251001` (fast, cost-efficient for conversational Q&A)
 **KV namespace:** `rate-limit-store` bound as `RATE_LIMIT`
 
 ### Updating the Agent's Knowledge
@@ -137,4 +140,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-Built with vanilla HTML · AI agent powered by Claude · Hosted on GitHub Pages · © 2026 Daniel Hinojosa
+Built with vanilla HTML · AI agent powered by Claude (`claude-haiku-4-5-20251001`) · Hosted on GitHub Pages · © 2026 Daniel Hinojosa
