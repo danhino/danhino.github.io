@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#1a1a1a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="100 Miles">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect fill='%230d6efd' width='180' height='180'/><text x='50%' y='50%' font-size='80' font-weight='bold' fill='white' text-anchor='middle' dominant-baseline='middle'>🎯</text></svg>">
+  <title>100 Miles of Summer</title>
+  <style>
+    * { 
+      box-sizing: border-box; 
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    input, button, select { -webkit-user-select: text; user-select: text; }
+    
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-primary: #1a1a1a;
+        --bg-secondary: #2d2d2d;
+        --bg-tertiary: #3a3a3a;
+        --text-primary: #ffffff;
+        --text-secondary: #b0b0b0;
+        --text-tertiary: #808080;
+        --border: #404040;
+        --blue: #4a9eff;
+        --green: #4caf50;
+        --orange: #ff9800;
+        --purple: #9c27b0;
+        --card-bg: #252525;
+      }
+    }
+
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg-primary: #ffffff;
+        --bg-secondary: #f8f9fa;
+        --bg-tertiary: #e9ecef;
+        --text-primary: #1a1a1a;
+        --text-secondary: #666666;
+        --text-tertiary: #999999;
+        --border: #e0e0e0;
+        --blue: #0d6efd;
+        --green: #198754;
+        --orange: #fd7e14;
+        --purple: #6f42c1;
+        --card-bg: #ffffff;
+      }
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+    }
+
+    body {
+      padding: max(0.75rem, env(safe-area-inset-top)) 
+            max(0.75rem, env(safe-area-inset-right)) 
+            max(0.75rem, env(safe-area-inset-bottom)) 
+            max(0.75rem, env(safe-area-inset-left));
+    }
+
+    .container {
+      max-width: 100%;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      padding-top: 0.5rem;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 28px;
+      color: var(--text-primary);
+      font-weight: 700;
+    }
+
+    .header p {
+      margin: 0.5rem 0 0 0;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .section {
+      margin-bottom: 1.5rem;
+    }
+
+    .section-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 0.75rem;
+      padding: 0 0.5rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-bottom: 0.75rem;
+      border: 1px solid var(--border);
+    }
+
+    .kids-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .kid-card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 1rem;
+      border: 1px solid var(--border);
+    }
+
+    .kid-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .kid-total {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 0.25rem 0;
+      line-height: 1;
+    }
+
+    .miles-label {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      margin-bottom: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      background: var(--bg-tertiary);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 0.5rem;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+
+    .julian-progress {
+      background: var(--blue);
+    }
+
+    .lauren-progress {
+      background: var(--green);
+    }
+
+    .progress-text {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 0.5rem;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .form-row.full {
+      grid-template-columns: 1fr;
+    }
+
+    .input-wrapper {
+      display: flex;
+      flex-direction: column;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="date"],
+    select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 16px;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    input[type="date"]:focus,
+    select:focus {
+      outline: none;
+      border-color: var(--blue);
+      background: var(--bg-secondary);
+    }
+
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath fill='%23999' d='M0 0l6 8 6-8z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.75rem center;
+      padding-right: 2.5rem;
+    }
+
+    .miles-input-group {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .miles-input-group input {
+      flex: 1;
+      text-align: center;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .miles-btn {
+      width: 48px;
+      height: 48px;
+      padding: 0;
+      font-size: 24px;
+      font-weight: 600;
+      flex-shrink: 0;
+      border: 1px solid var(--border);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .miles-btn:active {
+      background: var(--bg-tertiary);
+    }
+
+    .button-group {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.75rem;
+    }
+
+    .button-group.two-col {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    button {
+      padding: 0.875rem 1rem;
+      border: 1px solid var(--border);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 600;
+      transition: all 0.15s;
+    }
+
+    button:active {
+      opacity: 0.7;
+      transform: scale(0.98);
+    }
+
+    button.primary {
+      background: var(--blue);
+      color: white;
+      border-color: var(--blue);
+    }
+
+    button.danger {
+      background: #ffebee;
+      color: #c62828;
+      border-color: #c62828;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      button.danger {
+        background: #5f0a0a;
+        color: #ff6b6b;
+      }
+    }
+
+    .tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .tab-btn {
+      background: none;
+      border: none;
+      padding: 0.875rem 1rem;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      flex: 1;
+      text-align: center;
+      white-space: nowrap;
+      min-width: auto;
+    }
+
+    .tab-btn.active {
+      color: var(--blue);
+      border-bottom-color: var(--blue);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .log-entry {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 0.75rem;
+      padding: 0.875rem 0.5rem;
+      border-bottom: 1px solid var(--border);
+      align-items: center;
+    }
+
+    .log-entry:last-child {
+      border-bottom: none;
+    }
+
+    .log-date {
+      font-weight: 600;
+      color: var(--text-primary);
+      font-size: 14px;
+    }
+
+    .log-activity {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      margin-top: 0.25rem;
+    }
+
+    .log-miles {
+      text-align: right;
+      font-weight: 600;
+      color: var(--text-primary);
+      font-size: 15px;
+    }
+
+    .log-miles-label {
+      font-size: 11px;
+      color: var(--text-tertiary);
+    }
+
+    .celebration {
+      text-align: center;
+      padding: 1rem;
+      background: rgba(76, 175, 80, 0.15);
+      border-radius: 8px;
+      color: var(--green);
+      font-weight: 600;
+      margin-bottom: 1rem;
+      font-size: 15px;
+    }
+
+    .stat-card {
+      background: var(--bg-tertiary);
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 0.75rem;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .chart-container {
+      position: relative;
+      height: 280px;
+      margin-bottom: 1rem;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem;
+    }
+
+    .empty-state {
+      padding: 2rem 1rem;
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+
+    .sync-status {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 1rem;
+    }
+
+    .info-text {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🎯 100 Miles</h1>
+      <p>Summer tracking for Julian & Lauren</p>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Progress</div>
+      <div class="kids-grid">
+        <div class="kid-card">
+          <div class="kid-name">Julian</div>
+          <div class="kid-total"><span id="julian-total">0</span>/100</div>
+          <div class="miles-label">Miles</div>
+          <div class="progress-bar"><div class="progress-fill julian-progress" id="julian-progress" style="width: 0%"></div></div>
+          <div class="progress-text"><span id="julian-percent">0</span>%</div>
+        </div>
+        <div class="kid-card">
+          <div class="kid-name">Lauren</div>
+          <div class="kid-total"><span id="lauren-total">0</span>/100</div>
+          <div class="miles-label">Miles</div>
+          <div class="progress-bar"><div class="progress-fill lauren-progress" id="lauren-progress" style="width: 0%"></div></div>
+          <div class="progress-text"><span id="lauren-percent">0</span>%</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="celebration" class="celebration" style="display: none;"></div>
+
+    <div class="section">
+      <div class="card">
+        <div class="section-title">Log activity</div>
+        
+        <div class="form-row">
+          <div class="input-wrapper">
+            <label for="entry-date">Date</label>
+            <input type="date" id="entry-date">
+          </div>
+          <div class="input-wrapper">
+            <label for="activity-type">Activity</label>
+            <select id="activity-type">
+              <option value="Walk">Walk</option>
+              <option value="Run">Run</option>
+              <option value="Row">Row</option>
+              <option value="Bike">Bike</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row full">
+          <div class="input-wrapper">
+            <label>Julian (miles)</label>
+            <div class="miles-input-group">
+              <button class="miles-btn" onclick="decrementMiles('julian')">−</button>
+              <input type="number" id="julian-miles" min="0" step="0.5" placeholder="0">
+              <button class="miles-btn" onclick="incrementMiles('julian')">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row full">
+          <div class="input-wrapper">
+            <label>Lauren (miles)</label>
+            <div class="miles-input-group">
+              <button class="miles-btn" onclick="decrementMiles('lauren')">−</button>
+              <input type="number" id="lauren-miles" min="0" step="0.5" placeholder="0">
+              <button class="miles-btn" onclick="incrementMiles('lauren')">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="button-group">
+          <button class="primary" onclick="addEntry()">➕ Add entry</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="card">
+        <div class="tabs">
+          <button class="tab-btn active" onclick="switchTab('log')">Log</button>
+          <button class="tab-btn" onclick="switchTab('stats')">Stats</button>
+          <button class="tab-btn" onclick="switchTab('sync')">Sync</button>
+        </div>
+
+        <div id="log" class="tab-content active">
+          <div class="section-title">Recent activities</div>
+          <div id="activity-log">
+            <div class="empty-state">No entries yet</div>
+          </div>
+        </div>
+
+        <div id="stats" class="tab-content">
+          <div class="section-title">Activity breakdown</div>
+          <div class="chart-container">
+            <canvas id="activityChart"></canvas>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Total entries</div>
+            <div class="stat-value" id="total-entries">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Active days</div>
+            <div class="stat-value" id="active-days">0</div>
+          </div>
+        </div>
+
+        <div id="sync" class="tab-content">
+          <div class="section-title">Data sync</div>
+          <div class="info-text">
+            Your data is automatically saved to this device. Export to Google Drive for backup or import from a saved file.
+          </div>
+          <div class="button-group two-col">
+            <button onclick="exportData()">📥 Export</button>
+            <button onclick="importData()">📤 Import</button>
+          </div>
+          <div class="button-group" style="margin-top: 1rem;">
+            <button class="danger" onclick="clearAllData()">🗑️ Clear all data</button>
+          </div>
+          <div class="info-text" style="margin-top: 1rem; font-size: 12px;">
+            💡 Save exports to Google Drive or email for backup across devices.
+          </div>
+          <div class="sync-status" id="sync-status">Local storage ready</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+
+  <script>
+    let data = { entries: [] };
+    let chart = null;
+
+    function initializeTracker() {
+      const saved = localStorage.getItem('milesTrackerData');
+      if (saved) {
+        data = JSON.parse(saved);
+      } else {
+        data.entries = [
+          {date: '2025-06-15', julian: 2, lauren: 2, activity: 'Walk'},
+          {date: '2025-06-16', julian: 2, lauren: 2, activity: 'Walk'},
+          {date: '2025-06-21', julian: 3, lauren: 3, activity: 'Walk'},
+          {date: '2025-06-23', julian: 2, lauren: 2, activity: 'Walk'},
+          {date: '2025-06-24', julian: 2, lauren: 2, activity: 'Walk'},
+          {date: '2025-06-29', julian: 2, lauren: 2, activity: 'Walk'},
+          {date: '2025-06-30', julian: 3, lauren: 3, activity: 'Walk'},
+          {date: '2025-07-01', julian: 0, lauren: 2, activity: 'Walk'},
+          {date: '2025-07-05', julian: 2, lauren: 2, activity: 'Walk'},
+          {date: '2025-07-06', julian: 3, lauren: 3, activity: 'Walk'},
+          {date: '2025-07-08', julian: 2, lauren: 2, activity: 'Walk'},
+          {date: '2025-07-11', julian: 3, lauren: 3, activity: 'Walk'},
+          {date: '2025-07-13', julian: 3, lauren: 3, activity: 'Walk'},
+          {date: '2025-07-17', julian: 3, lauren: 3, activity: 'Walk'},
+          {date: '2025-07-19', julian: 2, lauren: 2, activity: 'Walk'},
+          {date: '2025-07-21', julian: 3, lauren: 3, activity: 'Walk'},
+          {date: '2025-07-23', julian: 4, lauren: 4, activity: 'Walk'},
+          {date: '2025-07-25', julian: 0, lauren: 2, activity: 'Walk'},
+          {date: '2025-07-26', julian: 2, lauren: 2, activity: 'Walk'},
+          {date: '2025-07-27', julian: 2, lauren: 2, activity: 'Walk'},
+          {date: '2025-07-28', julian: 2, lauren: 2, activity: 'Walk'},
+          {date: '2025-07-29', julian: 3, lauren: 3, activity: 'Walk'},
+          {date: '2025-08-02', julian: 2, lauren: 2, activity: 'Walk'},
+          {date: '2025-08-03', julian: 3, lauren: 3, activity: 'Walk'},
+          {date: '2025-08-04', julian: 2, lauren: 2, activity: 'Walk'},
+          {date: '2025-08-05', julian: 2, lauren: 2, activity: 'Walk'},
+          {date: '2025-08-09', julian: 2, lauren: 2, activity: 'Walk'},
+          {date: '2025-08-10', julian: 3, lauren: 3, activity: 'Walk'},
+          {date: '2025-08-11', julian: 3, lauren: 3, activity: 'Walk'},
+          {date: '2025-08-12', julian: 2, lauren: 2, activity: 'Walk'},
+          {date: '2025-08-14', julian: 3, lauren: 3, activity: 'Walk'},
+          {date: '2025-08-16', julian: 2, lauren: 2, activity: 'Rowing'},
+          {date: '2025-08-17', julian: 2, lauren: 2, activity: 'Walk'},
+          {date: '2025-08-17', julian: 1, lauren: 1, activity: 'Rowing'},
+          {date: '2025-08-18', julian: 3, lauren: 3, activity: 'Walk'},
+          {date: '2025-08-20', julian: 1, lauren: 1, activity: 'Walk'},
+          {date: '2025-08-22', julian: 2, lauren: 2, activity: 'Walk'},
+          {date: '2025-08-23', julian: 2, lauren: 2, activity: 'Walk'},
+          {date: '2025-08-24', julian: 2, lauren: 3, activity: 'Walk'},
+          {date: '2025-08-25', julian: 2, lauren: 2, activity: 'Walk'},
+          {date: '2025-08-28', julian: 2, lauren: 0, activity: 'Walk'},
+          {date: '2025-08-30', julian: 1, lauren: 2, activity: 'Walk'},
+          {date: '2025-09-04', julian: 5, lauren: 0, activity: 'Bike'},
+          {date: '2025-09-06', julian: 2, lauren: 3, activity: 'Walk'},
+          {date: '2025-09-07', julian: 1, lauren: 0, activity: 'Walk'}
+        ];
+        saveData();
+      }
+
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('entry-date').value = today;
+      updateDisplay();
+    }
+
+    function updateDisplay() {
+      const julianTotal = Math.round(data.entries.reduce((sum, e) => sum + e.julian, 0) * 10) / 10;
+      const laurenTotal = Math.round(data.entries.reduce((sum, e) => sum + e.lauren, 0) * 10) / 10;
+
+      document.getElementById('julian-total').textContent = julianTotal;
+      document.getElementById('lauren-total').textContent = laurenTotal;
+
+      const julianPercent = Math.round((julianTotal / 100) * 100);
+      const laurenPercent = Math.round((laurenTotal / 100) * 100);
+
+      document.getElementById('julian-percent').textContent = julianPercent;
+      document.getElementById('lauren-percent').textContent = laurenPercent;
+      document.getElementById('julian-progress').style.width = Math.min(julianPercent, 100) + '%';
+      document.getElementById('lauren-progress').style.width = Math.min(laurenPercent, 100) + '%';
+
+      const celebDiv = document.getElementById('celebration');
+      if (julianPercent === 100 && laurenPercent === 100) {
+        celebDiv.textContent = '🎉 Both kids hit 100 miles! Amazing summer!';
+        celebDiv.style.display = 'block';
+      } else if (julianPercent === 100) {
+        celebDiv.textContent = '🎉 Julian reached 100 miles!';
+        celebDiv.style.display = 'block';
+      } else if (laurenPercent === 100) {
+        celebDiv.textContent = '🎉 Lauren reached 100 miles!';
+        celebDiv.style.display = 'block';
+      } else {
+        celebDiv.style.display = 'none';
+      }
+
+      updateStats();
+      updateLog();
+    }
+
+    function updateStats() {
+      document.getElementById('total-entries').textContent = data.entries.length;
+      const uniqueDates = new Set(data.entries.map(e => e.date));
+      document.getElementById('active-days').textContent = uniqueDates.size;
+
+      const activityTotals = {};
+      data.entries.forEach(e => {
+        if (!activityTotals[e.activity]) activityTotals[e.activity] = 0;
+        activityTotals[e.activity] += e.julian + e.lauren;
+      });
+
+      const labels = Object.keys(activityTotals).length > 0 ? Object.keys(activityTotals) : ['No data'];
+      const values = Object.keys(activityTotals).length > 0 ? Object.values(activityTotals).map(v => Math.round(v * 10) / 10) : [0];
+
+      if (chart) chart.destroy();
+
+      const ctx = document.getElementById('activityChart');
+      if (ctx) {
+        const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const colors = ['#4a9eff', '#4caf50', '#ff9800', '#9c27b0'];
+        const textColor = isDark ? '#b0b0b0' : '#666666';
+        const gridColor = isDark ? '#404040' : '#e0e0e0';
+
+        chart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Total miles',
+              data: values,
+              backgroundColor: colors.slice(0, values.length),
+              borderRadius: 6,
+              borderSkipped: false
+            }]
+          },
+          options: {
+            indexAxis: 'x',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: { bodyColor: textColor, backgroundColor: isDark ? '#2d2d2d' : '#ffffff', borderColor: gridColor, borderWidth: 1 }
+            },
+            scales: {
+              x: { ticks: { color: textColor }, grid: { color: gridColor } },
+              y: { beginAtZero: true, max: 100, ticks: { color: textColor }, grid: { color: gridColor } }
+            }
+          }
+        });
+      }
+    }
+
+    function updateLog() {
+      const logDiv = document.getElementById('activity-log');
+      if (data.entries.length === 0) {
+        logDiv.innerHTML = '<div class="empty-state">No entries yet</div>';
+        return;
+      }
+
+      const sorted = [...data.entries].sort((a, b) => new Date(b.date) - new Date(a.date));
+      logDiv.innerHTML = sorted.map(e => {
+        const dateObj = new Date(e.date + 'T00:00:00');
+        const dateStr = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', weekday: 'short' });
+        return `
+          <div class="log-entry">
+            <div>
+              <div class="log-date">${dateStr}</div>
+              <div class="log-activity">${e.activity}</div>
+            </div>
+            <div>
+              <div class="log-miles-label">J</div>
+              <div class="log-miles">${e.julian}</div>
+            </div>
+            <div>
+              <div class="log-miles-label">L</div>
+              <div class="log-miles">${e.lauren}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function incrementMiles(kid) {
+      const input = document.getElementById(kid + '-miles');
+      const current = parseFloat(input.value) || 0;
+      input.value = (current + 0.5).toFixed(1);
+    }
+
+    function decrementMiles(kid) {
+      const input = document.getElementById(kid + '-miles');
+      const current = parseFloat(input.value) || 0;
+      if (current > 0) {
+        input.value = (current - 0.5).toFixed(1);
+      }
+    }
+
+    function addEntry() {
+      const dateStr = document.getElementById('entry-date').value;
+      const julian = parseFloat(document.getElementById('julian-miles').value) || 0;
+      const lauren = parseFloat(document.getElementById('lauren-miles').value) || 0;
+      const activity = document.getElementById('activity-type').value;
+
+      if (!dateStr || (julian === 0 && lauren === 0)) {
+        alert('Please fill in the date and at least one distance');
+        return;
+      }
+
+      data.entries.push({ date: dateStr, julian, lauren, activity });
+      saveData();
+      document.getElementById('julian-miles').value = '';
+      document.getElementById('lauren-miles').value = '';
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('entry-date').value = today;
+      updateDisplay();
+    }
+
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+      document.getElementById(tab).classList.add('active');
+      event.target.classList.add('active');
+    }
+
+    function exportData() {
+      const json = JSON.stringify(data, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = '100-miles-' + new Date().toISOString().split('T')[0] + '.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function importData() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json';
+      input.onchange = e => {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.onload = evt => {
+          try {
+            const imported = JSON.parse(evt.target.result);
+            if (imported.entries && Array.isArray(imported.entries)) {
+              data = imported;
+              saveData();
+              updateDisplay();
+              alert('✓ Data imported!');
+            } else {
+              alert('Invalid file format');
+            }
+          } catch (err) {
+            alert('Error: ' + err.message);
+          }
+        };
+        reader.readAsText(file);
+      };
+      input.click();
+    }
+
+    function clearAllData() {
+      if (confirm('⚠️ Delete ALL data? Export first for backup!')) {
+        if (confirm('Last chance! This cannot be undone.')) {
+          data = { entries: [] };
+          saveData();
+          updateDisplay();
+          alert('✓ All data cleared');
+        }
+      }
+    }
+
+    function saveData() {
+      localStorage.setItem('milesTrackerData', JSON.stringify(data));
+    }
+
+    initializeTracker();
+  </script>
+</body>
+</html>
